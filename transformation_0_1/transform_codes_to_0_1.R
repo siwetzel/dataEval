@@ -1,5 +1,4 @@
 library(stringr)
-library(readr)
 
 check_value = function(value, value_set, check_for_zero) {
   # check if a coded value belongs to a certain value set
@@ -27,15 +26,9 @@ check_value = function(value, value_set, check_for_zero) {
 
 
 
-transform_codes <- function(){
-  # TODO: add data as input later to function again
-  # TODO: remove later, just for debugging purposes
-  data <- read_csv2("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R/irr/input_data/marc_19_20.csv", show_col_types = FALSE)
-  data = data.frame(data, row.names = 1)
-  
+transform_codes <- function(data){
   # This function transforms coded data to values of 0 and 1
   # The applied transformation rules are specified in "Transformationsregeln Kodierung.docx"
-  # Input value: data of type dataframe (?)
   
   # Create a result data frame with 42 columns and corresponding column titles
   df <- data.frame(matrix(ncol = 42, nrow = nrow(data)))
@@ -48,7 +41,6 @@ transform_codes <- function(){
     "a1_4_1",
     "a1_4_2",
     "a1_4_3",
-  
     "a1_4_4",
     "a1_5",
     "a1_6",
