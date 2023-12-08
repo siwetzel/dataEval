@@ -47,7 +47,7 @@ kappa_per_task = function(rater1, rater2) {
 setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
 
 # Load helper functions
-source("transformation_0_1/transform_codes_to_0_1.R")
+source("helper_functions/transform_codes_to_0_1.R")
 
 # Read coded data of the three raters for classes 17-20
 marc_raw <- read_csv2("irr/input_data/marc_17_20.csv", show_col_types = FALSE)
