@@ -68,6 +68,7 @@ evaluate_mc_tasks = function(data) {
   copy_data = subset(copy_data, select = -c(a1_1_2,a1_1_3,a1_4_2,a1_4_3,a1_4_4,a2_6_2,a2_6_3,a2_6_4,a2_6_5,b1_1_2,b1_1_3,b1_4_2,b1_4_3,b1_4_4,b2_6_2,b2_6_3,b2_6_4,b2_6_5) )
   
   # rename the remaining columns of the mc tasks
+  # TODO: This does not work
   copy_data %>% 
     rename(
       a1_1 = a1_1_1,
@@ -77,6 +78,8 @@ evaluate_mc_tasks = function(data) {
       b1_4 = b1_4_1,
       b2_6 = b2_6_1
     )
-  
-  return(copy_data)
+  # This does also not work
+  #colnames(copy_data)[colnames(copy_data) == "a1_1"] = "a1_1"
+ 
+   return(copy_data)
 }

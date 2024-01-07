@@ -8,10 +8,10 @@ library(ggpubr)
 # Set working directory to folder where all R code related to the study is stored
 setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
 
-diffics = as.matrix(read.table("gdm_24/output_data/item_diffics.csv", sep=",", header=FALSE))
+diffics = as.matrix(read.table("gdm_24/output_data/item_diffics_groups_1_2.csv", sep=",", header=FALSE))
 
 # get data
-data = read_csv2("gdm_24/output_data/class13-20_gruppe_1_3_cleaned.csv", show_col_types = FALSE)
+data = read_csv2("gdm_24/output_data/class13-20_gruppe_1_2_cleaned.csv", show_col_types = FALSE)
 data = data.frame(data, row.names = 1)
 
 
@@ -119,6 +119,13 @@ for (i in 1:nrow(data)) {
   }
 }
 
+# Lösungsraten
+solving_rates = data.frame(matrix(0,1,48))
+colnames(solving_rates) = colnames(data_prepost)
+for (j in 1:48) {
+  solving_rates[1,j] = sum(data_prepost[,j],na.rm=TRUE) / nrow(data_prepost)
+}
+
 ###### 4-dimensional Rasch-Analysis ######
 
 # first dimension: pretest procedural
@@ -155,96 +162,77 @@ mod <- TAM::tam.mml( resp=data_prepost, Q=Q,  xsi.fixed = diffics_model, pid=row
 mp <- mod$person # TODO: das ist nicht der korrekte schätzer!!!!!!!
 fitting = (tam.fit(mod))$itemfit
 
-# ALTERNATIVE: WLE instead of person
-abil = tam.wle(mod)
-
-# create a results table (OLD: WIth person instead of WLE)
-#results = data.frame(cbind(mp$EAP.Dim1,mp$EAP.Dim2,mp$EAP.Dim3,mp$EAP.Dim4,matrix(0,nrow(data),1)),row.names = rownames(data))
-
 # create a results table
-results = data.frame(cbind(abil$theta.Dim01,abil$theta.Dim02,abil$theta.Dim03,abil$theta.Dim04,matrix(0,nrow(data),1)),row.names = rownames(data))
-colnames(results) = c("pre_pro","pre_con","post_pro","post_con","understanding")
+results = data.frame(cbind(mp$EAP.Dim1,mp$EAP.Dim2,mp$EAP.Dim3,mp$EAP.Dim4,matrix(0,nrow(data),1)),row.names = rownames(data))
+colnames(results) = c("pre_pro","pre_con","post_pro","post_con","interaction")
 
-# indicate which groups received the video rich with elements of understanding
+# indicate which groups received the interactive video
 for (i in 1:nrow(results)) {
-  if (substr(rownames(results)[i],1,1) == "3") {
+  if (substr(rownames(results)[i],1,1) == "2") {
     results[i,5] = 1
   }
 }
 
-# make a scatter plot of the results for the conceoptual items where the different groups have a different color
-ggplot(results, aes(x = pre_con, y = post_con, color = factor(understanding))) +
-  geom_point() +
-  labs(title = "Pretest vs. Posttest", x = "Pretest", y = "Posttest") +
-  scale_color_manual(values = c("blue", "red")) 
-
 # summarise means of different groups for all four dimensions
 m_pre_pro <- results %>%
-  group_by(understanding) %>%
+  group_by(interaction) %>%
   summarise(m = mean(pre_pro)) %>%
   arrange(m)
 
 m_pre_con <- results %>%
-  group_by(understanding) %>%
+  group_by(interaction) %>%
   summarise(m = mean(pre_con)) %>%
   arrange(m)
 
 m_post_pro <- results %>%
-  group_by(understanding) %>%
+  group_by(interaction) %>%
   summarise(m = mean(post_pro)) %>%
   arrange(m)
 
 m_post_con <- results %>%
-  group_by(understanding) %>%
+  group_by(interaction) %>%
   summarise(m = mean(post_con)) %>%
   arrange(m)
 
-# arrange data by dimension with a column for each group
-#group3 = results %>% filter(understanding == 1) # group with videos rich in elements of understanding
-#group1 = results %>% filter(understanding == 0)
-
-#pre_pro = data.frame(cbind(group1$pre_pro,group3$pre_pro)) # TODO: das klappt weil beide vektoren gleich viele Zeilen haben. Was wäre wenn das nicht so ist?
-#colnames(pre_pro) = c("group1","group3")
-
 
 # t-test to check whether means of pretest are statistically different (they should not be)
-t_pre_pro = t.test(pre_pro ~ understanding, data = results)
-t_pre_con = t.test(pre_con ~ understanding, data = results)
+t_pre_pro = t.test(pre_pro ~ interaction, data = results)
+t_pre_con = t.test(pre_con ~ interaction, data = results)
 
 # t-test whether means of posttest are atatistically different (
 # TODO: sollte man machen können weil prescores nicht statistisch unterschiedlich sind?
 # wahrscheinlich nicht! Weil statistisch nicht signifikante unterschiede im pretest werden im posttest dann ggf. signifikant!
-t_post_pro = t.test(post_pro ~ understanding, data = results)
-t_post_con = t.test(post_con ~ understanding, data = results)
+t_post_pro = t.test(post_pro ~ interaction, data = results)
+t_post_con = t.test(post_con ~ interaction, data = results)
 
 
 # create diff score results table
 diff_pro = results$post_pro - results$pre_pro
 diff_con = results$post_con - results$pre_con
-results_diff = data.frame(cbind(diff_pro,diff_con,results$understanding),row.names = rownames(results))
-colnames(results_diff) = c("diff_pro","diff_con","understanding")
+results_diff = data.frame(cbind(diff_pro,diff_con,results$interaction),row.names = rownames(results))
+colnames(results_diff) = c("diff_pro","diff_con","interaction")
 
 # t-test for diff scores
-t_diff_pro = t.test(diff_pro ~ understanding, data = results_diff)
-t_diff_con = t.test(diff_con ~ understanding, data = results_diff)
+t_diff_pro = t.test(diff_pro ~ interaction, data = results_diff)
+t_diff_con = t.test(diff_con ~ interaction, data = results_diff)
 
 # effect sizes with Cohen's d
-results_diff %>% cohens_d(diff_con ~ understanding, var.equal = TRUE) # TODO: kann ich annehmen, dass Varianzen gleich sind?
+results_diff %>% cohens_d(diff_con ~ interaction, var.equal = TRUE) # TODO: kann ich annehmen, dass Varianzen gleich sind?
 
 ##### Mixed ANOVA #####
 # https://www.datanovia.com/en/lessons/mixed-anova-in-r/
 
 # split procedural and conceptual results into two tables where the particpants codes are also a columns
 # procedural
-results_pro = select(results, pre_pro, post_pro, understanding)
+results_pro = select(results, pre_pro, post_pro, interaction)
 results_pro = cbind(rownames(results_pro), results_pro)
 rownames(results_pro) = NULL
-colnames(results_pro) = c("code","pre_pro","post_pro","understanding")
+colnames(results_pro) = c("code","pre_pro","post_pro","interaction")
 # conceptual
-results_con = select(results, pre_con, post_con, understanding)
+results_con = select(results, pre_con, post_con, interaction)
 results_con = cbind(rownames(results_con), results_con)
 rownames(results_con) = NULL
-colnames(results_con) = c("code","pre_con","post_con","understanding")
+colnames(results_con) = c("code","pre_con","post_con","interaction")
 
 # convert columns of pretest and posttest into single columns (with two rows per subject)
 # procedural
@@ -265,24 +253,23 @@ results_con_sc[results_con_sc == 0] = "0"
 # create boxplots
 boxplot_pro <- ggboxplot(
   results_pro_sc, x = "test", y = "score",
-   color="understanding",palette = "jco"
+   color="interaction",palette = "jco"
 )
 
 # create boxplots
 boxplot_con <- ggboxplot(
   results_con_sc, x = "test", y = "score",
-  color="understanding",palette = "jco", add="mean",
-  xlab = FALSE, ylab="Personenparameter"
+  color="interaction",palette = "jco", add="mean"
 )
 
 # Check assumptions for ANOVA
 # Outliers
 results_pro_sc %>%
-  group_by(test, understanding) %>%
+  group_by(test, interaction) %>%
   identify_outliers(score)
 
 results_con_sc %>%
-  group_by(test, understanding) %>%
+  group_by(test, interaction) %>%
   identify_outliers(score)
 
 # Normality
@@ -296,15 +283,15 @@ ks.test(results_con$post_con,"pnorm",mean=mean(results_con$post_con),sd=sd(resul
 # Homgenity of variance
 results_pro_sc %>%
   group_by(test) %>%
-  levene_test(score ~ understanding)
+  levene_test(score ~ interaction)
 
 results_con_sc %>%
   group_by(test) %>%
-  levene_test(score ~ understanding)
+  levene_test(score ~ interaction)
 
 # Homogenity of covariance
-box_m(results_pro_sc[, "score", drop = FALSE], results_pro_sc$understanding)
-box_m(results_con_sc[, "score", drop = FALSE], results_con_sc$understanding)
+box_m(results_pro_sc[, "score", drop = FALSE], results_pro_sc$interaction)
+box_m(results_con_sc[, "score", drop = FALSE], results_con_sc$interaction)
 # TODO: evtl. problematisch für konzeptuelle Gruppe?
 
 
@@ -312,13 +299,13 @@ box_m(results_con_sc[, "score", drop = FALSE], results_con_sc$understanding)
 # procedural
 anova_pro <- anova_test(
   data = results_pro_sc, dv = score, wid = code,
-  between = understanding, within = test
+  between = interaction, within = test
 )
-get_anova_table(anova_pro)
+get_anova_table(anova_pre)
 # conceptual
 anova_con <- anova_test(
   data = results_con_sc, dv = score, wid = code,
-  between = understanding, within = test
+  between = interaction, within = test
 )
 get_anova_table(anova_con)
 
@@ -328,42 +315,6 @@ f_pro = sqrt(anova_pro$ges[3]/(1-anova_pro$ges[3]))
 f_con = sqrt(anova_con$ges[3]/(1-anova_con$ges[3]))
 
 
-########### separate by pretest scores ###########
-results_con_ordered = results_con[order(results_con$pre_con),]
-# top 50% pretest scorers
-results_con_ordered_top = results_con_ordered[47:92,]
-# bottom 50% pretest scorers
-results_con_ordered_bottom = results_con_ordered[1:46,]
-
-results_con_ordered_bottom_sc = results_con_ordered_bottom %>%
-  gather(key = "test", value = "score", pre_con, post_con) %>%
-  convert_as_factor(code, test)
-
-results_con_ordered_top_sc = results_con_ordered_top %>%
-  gather(key = "test", value = "score", pre_con, post_con) %>%
-  convert_as_factor(code, test)
-
-anova_con <- anova_test(
-  data = results_con_ordered_bottom_sc, dv = score, wid = code,
-  between = understanding, within = test
-)
-get_anova_table(anova_con)
 
 
-# BOXPLOTS of top and bottom scorers
-# replace 0 and 1 integer values with strings (for boxplot to work)
-results_con_ordered_top_sc[results_con_ordered_top_sc == 1] = "1"
-results_con_ordered_top_sc[results_con_ordered_top_sc == 0] = "0"
-results_con_ordered_bottom_sc[results_con_ordered_bottom_sc == 1] = "1"
-results_con_ordered_bottom_sc[results_con_ordered_bottom_sc == 0] = "0"
 
-# create boxplots
-ggboxplot(
-  results_con_ordered_top_sc, x = "test", y = "score",
-  color="understanding",palette = "jco", add="mean"
-)
-
-ggboxplot(
-  results_con_ordered_bottom_sc, x = "test", y = "score",
-  color="understanding",palette = "jco", add="mean"
-)

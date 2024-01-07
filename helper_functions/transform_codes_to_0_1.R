@@ -1,8 +1,8 @@
 library(stringr)
 
-check_value = function(value, value_set, check_for_zero) {
+check_value = function(value, value_set, check_for_zero) { # TODO: macht diese Funktion Sinn???
   # check if a coded value belongs to a certain value set
-  # if check_for_zero is true, it is enough that one value is in the set to return true
+  # if check_for_zero is true (bedeutet: es wird überprüft ob dieser Eintrag zu 0 evaluiert wird), it is enough that one value is in the set to return true
   
   # value could contain a concatenated string of more than one code
   # first, any existing spaces are removed
@@ -140,7 +140,7 @@ transform_codes <- function(data){
     c("k","1","2","p"), c("3","4","5","kl","g","s","div","ab"),
     c("k","ff","nb"), c("f","fk","n","int"),
     c("k","fp"), c("sp","i","ab"),
-    c("5"), c("0","1","2","3","4","6","7","8","9"),
+    c("5","9"), c("0","1","2","3","4","6","7","8"),
     c("2"), c("1","0"),
     c("2"), c("1","0"),
     c("1"), c("2","0"),
@@ -162,19 +162,16 @@ transform_codes <- function(data){
   for (i in 1:nrow(data)) {
     for (j in 1:ncol(data)) {
       # skip columns where multiple conditions must be met
-      if (j %in% c(5,6,12,16,17,18,19,30,31,40,41)){
+      if (j %in% c(5,6,12,16,17,18,19,30,31,40,41)){ # TODO: ist es ein Problem, dass hier Index 11 fehlt? Wahrscheinlich nixht, weil ja nur die erste Spalte gebraucht wird
         next
       }
       
-      # TODO: Seperate multiple comma seperated entries
       # check whether entry evaluates to 1
-      #if(data[i,j] %in% unlist(mapping_matrix["1",j])) {
       if (check_value(data[i,j],unlist(mapping_matrix["1",j]),FALSE)) {
         df[i,index_mapper[j]] = 1
       }
       
       # check whether entry evaluates to 0
-      #else if(data[i,j] %in% unlist(mapping_matrix["0",j])) {
       else if (check_value(data[i,j],unlist(mapping_matrix["0",j]),TRUE)) {
         df[i,index_mapper[j]] = 0
       }
@@ -191,13 +188,11 @@ transform_codes <- function(data){
   for (i in 1:nrow(data)) {
     for (j in c(5, 16, 18, 30, 40)) {
       # both conditions must be met to be evaluated to 1
-      #if(data[i,j] %in% unlist(mapping_matrix["1",j]) && data[i,j+1] %in% unlist(mapping_matrix["1",j+1])) {
       if(check_value(data[i,j],unlist(mapping_matrix["1",j]),FALSE) && check_value(data[i,j+1],unlist(mapping_matrix["1",j+1]),FALSE)) {
         df[i,index_mapper[j]] = 1
       }
       
       # only one condition must be violated to be evaluated to 0
-      #else if(data[i,j] %in% unlist(mapping_matrix["0",j]) || data[i,j+1] %in% unlist(mapping_matrix["0",j+1])) {
       else if(check_value(data[i,j],unlist(mapping_matrix["0",j]),TRUE) || check_value(data[i,j+1],unlist(mapping_matrix["0",j+1]),TRUE)) {
         df[i,index_mapper[j]] = 0
       }
