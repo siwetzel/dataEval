@@ -26,29 +26,6 @@ for (i in 1:nrow(data)) {
   }
 }
 
-# Evaluate multiple choice tasks to one score
-data_mc_raw = data # save data where mc items are not yet transformed into one score
-data = pc_evaluate_mc_tasks(data)
-
-# # calculate statistics for partial credit tasks how often tasks were scored with 0, 1, 2
-# statistic = data.frame(matrix(0,3,ncol(data)))
-# rownames(statistic) = c("2","1","0")
-# colnames(statistic) = colnames(data)
-# for (i in 1:nrow(data)) {
-#   for (j in 1:ncol(data)) {
-#     if(is.na(data[i,j])) {
-#       next
-#     }
-#     if(data[i,j] == "2") {
-#       statistic["2",j] = statistic["2",j] + 1
-#     } else if(data[i,j] == "1") {
-#       statistic["1",j] = statistic["1",j] + 1
-#     } else if(data[i,j] == "0") {
-#       statistic["0",j] = statistic["0",j] + 1
-#     } 
-#   }
-# }
-
 # code 2, 1 and 0 as numeric values (currently saved as characters)
 # create a new dataframe so that datatypes are correct
 data_clean = data.frame(matrix(0,nrow(data),ncol(data)),row.names = rownames(data))
@@ -74,6 +51,7 @@ for (i in 1:nrow(data_clean)) {
 }
 
 # same for raw mc data
+data_mc_raw = data # save data where mc items are not yet transformed into one score
 data_mc_raw_clean = data.frame(matrix(0,nrow(data_mc_raw),ncol(data_mc_raw)),row.names = rownames(data_mc_raw))
 colnames(data_mc_raw_clean) = colnames(data_mc_raw)
 for (i in 1:nrow(data_mc_raw_clean)) {
@@ -93,19 +71,41 @@ for (i in 1:nrow(data_mc_raw_clean)) {
   }
 }
 
-# TODO: hier müsste eigentlich zwischen omitted und not reached unterschieden werden+
-# TODO: WIrd hier gemacht, muss noch getestet werden
+# Evaluate multiple choice tasks to one score
+data_clean = pc_evaluate_mc_tasks(data_clean, 2) # currently using version 2 as a transformation rule
+
+# # calculate statistics for partial credit tasks how often tasks were scored with 0, 1, 2
+# statistic = data.frame(matrix(0,3,ncol(data)))
+# rownames(statistic) = c("2","1","0")
+# colnames(statistic) = colnames(data)
+# for (i in 1:nrow(data)) {
+#   for (j in 1:ncol(data)) {
+#     if(is.na(data[i,j])) {
+#       next
+#     }
+#     if(data[i,j] == "2") {
+#       statistic["2",j] = statistic["2",j] + 1
+#     } else if(data[i,j] == "1") {
+#       statistic["1",j] = statistic["1",j] + 1
+#     } else if(data[i,j] == "0") {
+#       statistic["0",j] = statistic["0",j] + 1
+#     } 
+#   }
+# }
+
+
+# TODO: muss noch getestet werden ob Omitted / Not reached richtig kodiert werden
 # Handling of missing data
 data_2 = handle_missing_values(data_clean, FALSE)
 
 
 #### OLD
 # NA values are replaced with 0 (TODO: check if makes sense) (weil Powertest, siehe Diss Tobias S. 76)
-data_2 = data_clean
-data_2[is.na(data_2)] = 0
+#data_2 = data_clean
+#data_2[is.na(data_2)] = 0
 
-data_3 = data_mc_raw_clean
-data_3[is.na(data_3)] = 0 
+#data_3 = data_mc_raw_clean
+#data_3[is.na(data_3)] = 0 
 ###
 
 # TODO: Why are colnames still wrong even though they were renamed in evaluate_mc_tasks????
