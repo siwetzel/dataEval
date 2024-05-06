@@ -1,4 +1,3 @@
-library(stringr)
 
 check_value = function(value, value_set, check_for_zero) { # TODO: macht diese Funktion Sinn???
   # check if a coded value belongs to a certain value set
@@ -128,7 +127,7 @@ transform_codes <- function(data){
     c("1"), c("2","0"),
     c("2"), c("1","0"),
     c("2"), c("1","0"),
-    c("k","ks"), c("u","f"),
+    c("k","ks"), c("u","f","ab"),
     c("k","ks"), c("kt","ku","ab","f")
   ),2)
   
@@ -136,7 +135,7 @@ transform_codes <- function(data){
   # tasks in B2
   rules_b2 = matrix(list(
     c("2"), c("0","1","3","4","5","6"),
-    c("k"), c("e","sp","l","g","nl","str","s","ab"),
+    c("k"), c("e","sp","i","g","nl","str","s","ab"),
     c("k","1","2","p"), c("3","4","5","kl","g","s","div","ab"),
     c("k","ff","nb"), c("f","fk","n","int"),
     c("k","fp"), c("sp","i","ab"),
@@ -162,7 +161,7 @@ transform_codes <- function(data){
   for (i in 1:nrow(data)) {
     for (j in 1:ncol(data)) {
       # skip columns where multiple conditions must be met
-      if (j %in% c(5,6,12,16,17,18,19,30,31,40,41)){ # TODO: ist es ein Problem, dass hier Index 11 fehlt? Wahrscheinlich nixht, weil ja nur die erste Spalte gebraucht wird
+      if (j %in% c(5,6,12,16,17,18,19,30,31,40,41)){ 
         next
       }
       
@@ -199,8 +198,8 @@ transform_codes <- function(data){
       
       # keep merged original coded value if it cannot be mapped to 1 or 0
       else {
-        if (data[i,j] == "na" && data[i,j+1] =="na") {
-          df[i,index_mapper[j]] = "na"
+        if (is.na(data[i,j]) && is.na(data[i,j+1])) {
+          df[i,index_mapper[j]] = NA
         } else {
           df[i,index_mapper[j]] = paste(data[i,j],data[i,j+1])
         }

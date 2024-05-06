@@ -12,7 +12,9 @@ data = read_csv2("gdm_24/output_data/class13-20_gruppe_1_3.csv", show_col_types 
 data = data.frame(data, row.names = 1)
 
 
-# code missing values with NA (not na). 
+##### !!!!!!!NEU!!!!!! #####
+# code missing values with 0 (weil Powertest, siehe Diss Tobias S. 76)
+############################
 # code 1 and 0 as numeric values
 # create a new dataframe so that datatypes are correct
 data_clean = data.frame(matrix(0,nrow(data),ncol(data)),row.names = rownames(data))
@@ -22,15 +24,10 @@ for (i in 1:nrow(data_clean)) {
     if (data[i,j] == "1") {
       data_clean[i,j] = 1
     } else if (data[i,j] == "na") {
-      data_clean[i,j] = NA
+      data_clean[i,j] = 0
     }
   }
 }
-
-#data[data == "na"] = NA
-# code 1 and 0 as numeric values
-#data[data == "0"] = 0
-#data[data == "1"] = 1
 
 
 # create Q matrix (which items are procedural and which items are conceptual)
@@ -51,6 +48,28 @@ for (i in 1:nrow(Q)) {
 
 # analysis of items
 mod <- TAM::tam.mml(resp=data_clean, Q=Q)
+abil = tam.wle(mod)
+
+##### CTT ANALYSIS ##### (TODO: Müssen Trennschärfen hier oder bei vierdimensionaler Analyse berechnet werden?)
+ctt1 = tam.ctt(data_clean, abil$theta.Dim01)
+ctt2 = tam.ctt(data_clean, abil$theta.Dim02)
+
+# determine pointbiserial corelation (trennschärfe) with the right dimension
+# procedural
+pbc1 = c()
+# conceptual
+pbc2 = c()
+
+# get the corresponding values from the ctt dataframes
+for (i in 1:48) {
+  if ((i-1) %% 4 == 1) {
+    pbc1 = append(pbc1,ctt1$rpb.WLE[i])
+  } else if ((i-1) %% 4 == 3) {
+    pbc2 = append(pbc2,ctt2$rpb.WLE[i])
+  }
+}
+
+
 
 # Save item difficulties
 write.table(mod$xsi$xsi, file="gdm_24/output_data/item_diffics.csv", sep=",", col.names = FALSE, row.names = FALSE)

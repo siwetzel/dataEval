@@ -5,7 +5,7 @@ evaluate_mc_tasks = function(data) {
   # for the purpose of this evaluation, replace NA values with 0
   # TODO: re-evaluate if this makes sense
   copy_data = data
-  data[data == "na"] = "0"
+  data[is.na(data)] = "0"
   
 
   for (i in 1:nrow(data)) {
