@@ -23,6 +23,8 @@ check_value = function(value, value_set, check_for_zero) { # TODO: macht diese F
   
 }
 
+# TODO Ist es evtl. so, dass es nicht richtig funktioniert weil 2er von 1er überschrieben werden oder 1er 2ernicht überschreiben aber es sollten?
+
 transform_codes <- function(data){
   # This function transforms coded data to values of 0, 1 and 2
   # The applied transformation rules are specified in "Transformationsregeln Kodierung.docx"
@@ -101,9 +103,9 @@ transform_codes <- function(data){
     c("2"), c("1","0"), c(""),
     c("1"), c("2","0"), c(""),
     c("2"), c("1","0"), c(""),
-    c("k"), c("d"), c("f","u","ab"),
+    c("k"), c("d"), c("f","u"),
     c(""), c("1,2,3,4,5"), c(""), # todo: Ist diese Zeile nicht komplett irrelevant? Sie ist eh nicht vollständig. Wird sie später berücksichtigt?
-    c("k","kr"), c("kr","ks","kt","ku"), c("ab","f")
+    c("k","kr"), c("ks","kt","ku"), c("ab","f")
   ),3)
 
   
@@ -112,9 +114,9 @@ transform_codes <- function(data){
     c("5"), c("0","1","2","3","4","6"), c(""),
     c("k"), c("e","sp","p","g","nl","str","s","ab"), c(""),
     c("k"), c("k","1","2","p"), c("3","4","5","kl","g","s","div","ab"),
-    c("k","fk"), c("k","fk","ff","ub","d","n","int"), c("f"),
+    c("k"), c("k","fk","ff","ub","d","n"), c("f","int"),
     c("k"), c("k"), c("p","i","ab"),
-    c("k"), c("d","p","f"), c("k","d","p","f"),
+    c("k"), c("d","f"), c("p", "f"),
     c("5"), c("0","1","2","3","4","6","7","8","9","10","11","12"), c(""),
     c("2"), c("1","0"), c(""),
     c("2"), c("1","0"), c(""),
@@ -144,8 +146,8 @@ transform_codes <- function(data){
   rules_b2 = matrix(list(
     c("2"), c("0","1","3","4","5","6"), c(""),
     c("k"), c("e","sp","i","g","nl","str","s","ab"), c(""),
-    c("k","p"), c("k","1","2","p"), c("3","4","5","kl","g","s","div","ab"),
-    c("k","nb"), c("k","ff","fk","n","int"), c("f","fk","n","int"),
+    c("k"), c("k","1","2","p"), c("3","4","5","kl","g","s","div","ab"),
+    c("k"), c("k","ff","nb"), c("f","fk","n","int"),
     c("k","fp"), c("sp","i","ab"), c(""),
     c("5","9"), c("0","1","2","3","4","6","7","8"), c(""),
     c("2"), c("1","0"), c(""),
@@ -179,15 +181,15 @@ transform_codes <- function(data){
         # 0 / 1 scoring
         # check whether entry evaluates to 1
         if (check_value(data[i,j],unlist(mapping_matrix["2",j]),FALSE)) {
-          df[i,index_mapper[j]] = "1"
+          df[i,index_mapper[j]] = 1
         }
         
         # check whether entry evaluates to 0
         else if (check_value(data[i,j],unlist(mapping_matrix["1",j]),TRUE)) {
-          df[i,index_mapper[j]] = "0"
+          df[i,index_mapper[j]] = 0
         }
         
-        # keep original coded value if it cannot be mapped to 2, 1 or 0
+        # keep original coded value if it cannot be mapped to 1 or 0
         else {
           df[i,index_mapper[j]] = data[i,j]
         }
@@ -195,17 +197,17 @@ transform_codes <- function(data){
         # partial credit scoring
         # check whether entry evaluates to 2
         if (check_value(data[i,j],unlist(mapping_matrix["2",j]),FALSE)) {
-          df[i,index_mapper[j]] = "2"
+          df[i,index_mapper[j]] = 2
         }
         
         # check whether entry evaluates to 1
         else if (check_value(data[i,j],unlist(mapping_matrix["1",j]),FALSE)) {
-          df[i,index_mapper[j]] = "1"
+          df[i,index_mapper[j]] = 1
         }
         
         # check whether entry evaluates to 0
         else if (check_value(data[i,j],unlist(mapping_matrix["0",j]),TRUE)) {
-          df[i,index_mapper[j]] = "0"
+          df[i,index_mapper[j]] = 0
         }
         
         # keep original coded value if it cannot be mapped to 1 or 0
@@ -217,28 +219,23 @@ transform_codes <- function(data){
   }
   
   # Transform data were multiple conditions must be met
+  # TODO: was wenn es nicht drin ist und nur eins von beidem nicht drin ist? dann wird check value false beim check ob es in 0 ist
   for (i in 1:nrow(data)) {
     for (j in c(5, 16, 18, 30, 40)) {
-      # special case for tasks a1_3, a2_3, a2_4, b1_3, b2_3 for code "k f" => score of 1
-      if (paste(data[i,j],data[i,j+1]) == "k f") {
-        df[i,index_mapper[j]] = "1"
-        next
-      }
-      
       # partial credit scoring
       # both conditions must be met to be evaluated to 2
       if(check_value(data[i,j],unlist(mapping_matrix["2",j]),FALSE) && check_value(data[i,j+1],unlist(mapping_matrix["2",j+1]),FALSE)) {
-        df[i,index_mapper[j]] = "2"
+        df[i,index_mapper[j]] = 2
       }
         
       # both conditions must be met to be evaluated to 1
       else if(check_value(data[i,j],unlist(mapping_matrix["1",j]),FALSE) && check_value(data[i,j+1],unlist(mapping_matrix["1",j+1]),FALSE)) {
-        df[i,index_mapper[j]] = "1"
+        df[i,index_mapper[j]] = 1
       }
         
       # only one condition must be violated to be evaluated to 0
       else if(check_value(data[i,j],unlist(mapping_matrix["0",j]),TRUE) || check_value(data[i,j+1],unlist(mapping_matrix["0",j+1]),TRUE)) {
-        df[i,index_mapper[j]] = "0"
+        df[i,index_mapper[j]] = 0
       }
         
       # keep merged original coded value if it cannot be mapped to 1 or 0
@@ -249,6 +246,11 @@ transform_codes <- function(data){
           df[i,index_mapper[j]] = paste(data[i,j],data[i,j+1])
         }
       }
+      print(j)
+      print(unlist(strsplit(str_replace_all(data[i,j], " ", ""), ",")))
+      print(unlist(strsplit(str_replace_all(data[i,j+1], " ", ""), ",")))
+      print(df[i,index_mapper[j]])
+      
     }
     
     

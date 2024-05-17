@@ -10,57 +10,88 @@ pc_evaluate_mc_tasks = function(data, version) {
   # Threshold 3/5, 2/4, 2/3 for 1 point, all correct for 2 points
   # 4:
   # Each answer is awarded a half point
+  #
+  # Rule for NA handling:
+  # All answers NA => NA
+  # only one or some of the answers NA => functions like omitted => 0 for each of these answers
   
-  # TODO: handling of NA values the same in all versions??
-  # TODO: Was mit NAs machen? Vorher hatte ich sie einfach stupide auf 0 gesetzt
-  # Aktueller NA Ansatz (nochmal nachlesen / auswerten): wenn eins NA ist, alles zu NA auswerten
   for (i in 1:nrow(data)) {
     # task a1_1
-    if(is.na(data[i,1]) || is.na(data[i,2]) || is.na(data[i,3])) {
+    if(is.na(data[i,1]) && is.na(data[i,2]) && is.na(data[i,3])) {
       data[i,1] = NA
     } else {
+      for (j in 1:3) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,1]) + as.numeric(data[i,2]) + as.numeric(data[i,3])
-      data[i,j] = score(sum,3,version)
+      data[i,1] = score(sum,3,version)
     }
     
     # task a1_4
-    if(is.na(data[i,6]) || is.na(data[i,7]) || is.na(data[i,8]) || is.na(data[i,9])) {
+    if(is.na(data[i,6]) && is.na(data[i,7]) && is.na(data[i,8]) && is.na(data[i,9])) {
       data[i,6] = NA
     } else {
+      for (j in 6:9) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,6]) + as.numeric(data[i,7]) + as.numeric(data[i,8]) + as.numeric(data[i,9])
-      data[i,j] = score(sum,4,version)
+      data[i,6] = score(sum,4,version)
     }
     
     # task a2_6
-    if(is.na(data[i,17]) || is.na(data[i,18]) || is.na(data[i,19]) || is.na(data[i,20]) || is.na(data[i,21])) {
+    if(is.na(data[i,17]) && is.na(data[i,18]) && is.na(data[i,19]) && is.na(data[i,20]) && is.na(data[i,21])) {
       data[i,17] = NA
     } else {
+      for (j in 17:21) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,17]) + as.numeric(data[i,18]) + as.numeric(data[i,19]) + as.numeric(data[i,20]) + as.numeric(data[i,21])
-      data[i,j] = score(sum,5,version)
+      data[i,17] = score(sum,5,version)
     }
     
     # task b1_1
-    if(is.na(data[i,22]) || is.na(data[i,23]) || is.na(data[i,24])) {
+    if(is.na(data[i,22]) && is.na(data[i,23]) && is.na(data[i,24])) {
       data[i,22] = NA
     } else {
+      for (j in 22:24) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,22]) + as.numeric(data[i,23]) + as.numeric(data[i,24])
-      data[i,j] = score(sum,3,version)
+      data[i,22] = score(sum,3,version)
     }
     
     # task b1_4
-    if(is.na(data[i,27]) || is.na(data[i,28]) || is.na(data[i,29]) || is.na(data[i,30])) {
+    if(is.na(data[i,27]) && is.na(data[i,28]) && is.na(data[i,29]) && is.na(data[i,30])) {
       data[i,27] = NA
     } else {
+      for (j in 27:30) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,27]) + as.numeric(data[i,28]) + as.numeric(data[i,29]) + as.numeric(data[i,30])
-      data[i,j] = score(sum,4,version)
+      data[i,27] = score(sum,4,version)
     }
     
     # task b2_6
-    if(is.na(data[i,38]) || is.na(data[i,39]) || is.na(data[i,40]) || is.na(data[i,41]) || is.na(data[i,42])) {
+    if(is.na(data[i,38]) && is.na(data[i,39]) && is.na(data[i,40]) && is.na(data[i,41]) && is.na(data[i,42])) {
       data[i,38] = NA
     } else {
+      for (j in 38:42) {
+        if (is.na(data[i,j])) {
+          data[i,j] = "0"
+        }
+      }
       sum = as.numeric(data[i,38]) + as.numeric(data[i,39]) + as.numeric(data[i,40]) + as.numeric(data[i,41]) + as.numeric(data[i,42])
-      data[i,j] = score(sum,5,version)
+      data[i,38] = score(sum,5,version)
     }
     
   }
@@ -108,7 +139,7 @@ score = function(points, max_points, version) {
       return(0)
     } 
   } else if (version == 4) {
-    # halp point per answer
+    # half point per answer
     return (0.5*points)
   }
 }
