@@ -64,11 +64,25 @@ for (i in 1:nrow(data)) {
 print("Replaced entries with 0: ")
 print(counter)
 
+
 # save data where mc items are not yet transformed into one score
 data_mc_raw = data
 
 # Evaluate multiple choice tasks to one score
 data = pc_evaluate_mc_tasks(data, 2) # TODO currently using version 2 as a transformation rule 
+
+# check for potentially empty pretests / posttest
+for (i in 1:nrow(data)) {
+  counter_na = 0
+  for (j in 1:ncol(data)) {
+    if (is.na(data[i,j])) {
+      counter_na = counter_na + 1
+    }
+  }
+  if (counter_na >= 12) {
+    print(rownames(data)[i])
+  }
+}
 
 # code missing values as either omitted or not reached
 data_NAcoded = code_missing_values(data) 
@@ -151,3 +165,7 @@ for (i in 1:nrow(data_mc_raw_clean)) {
 
 write.csv2(data_clean, file = "output_data/data_pc_scored.csv")
 write.csv2(data_mc_raw_clean, file = "output_data/data_pc_scored_mc_raw.csv")
+
+
+
+

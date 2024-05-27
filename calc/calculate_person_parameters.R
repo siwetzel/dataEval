@@ -11,7 +11,7 @@ setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
 diffics = as.matrix(read.table("output_data/item_diffics.csv", sep=",", header=FALSE))
 
 # get data
-data = read_csv2("output_data/data_final_noNA.csv", show_col_types = FALSE)
+data = read_csv2("output_data/data_pc_scored.csv", show_col_types = FALSE)
 data = data.frame(data, row.names = 1)
 
 
