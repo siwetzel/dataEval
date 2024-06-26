@@ -11,7 +11,7 @@ source("helper_functions/pc_evaluate_mc_tasks.R")
 source("helper_functions/handle_missing_values.R")
 
 # Read coded data of all 20 classes
-data_raw = data.frame(read_csv2("input_data/data_raw_final.csv", show_col_types = FALSE), row.names = 1)
+data_raw = data.frame(read_csv2("input_data/data_raw_final.csv", show_col_types = FALSE, col_names = FALSE), row.names = 1)
 data = transform_codes(data_raw)
 
 row.names(data) = rownames(data_raw)
@@ -71,7 +71,7 @@ data_mc_raw = data
 # Evaluate multiple choice tasks to one score
 data = pc_evaluate_mc_tasks(data, 2) # TODO currently using version 2 as a transformation rule 
 
-# check for potentially empty pretests / posttest
+# check for potentially empty pretest / posttest
 for (i in 1:nrow(data)) {
   counter_na = 0
   for (j in 1:ncol(data)) {
@@ -86,10 +86,6 @@ for (i in 1:nrow(data)) {
 
 # code missing values as either omitted or not reached
 data_NAcoded = code_missing_values(data) 
-
-# Transform OM / NR values to 0 / NA
-# TODO: move different versions to beginning of item difficulty calculation and person ability calculation
-#data_NAhandled = handle_missing_values(data_NAcoded,FALSE,FALSE)
 
 # code 2, 1 and 0 as numeric values (currently saved as characters)
 # code omitted ("55") as 55 and not reached ("99") as 99
@@ -143,29 +139,5 @@ for (i in 1:nrow(data_mc_raw_clean)) {
   }
 }
 
-# TODO: needed?
-# # calculate statistics for partial credit tasks how often tasks were scored with 0, 1, 2
-# statistic = data.frame(matrix(0,3,ncol(data)))
-# rownames(statistic) = c("2","1","0")
-# colnames(statistic) = colnames(data)
-# for (i in 1:nrow(data)) {
-#   for (j in 1:ncol(data)) {
-#     if(is.na(data[i,j])) {
-#       next
-#     }
-#     if(data[i,j] == "2") {
-#       statistic["2",j] = statistic["2",j] + 1
-#     } else if(data[i,j] == "1") {
-#       statistic["1",j] = statistic["1",j] + 1
-#     } else if(data[i,j] == "0") {
-#       statistic["0",j] = statistic["0",j] + 1
-#     } 
-#   }
-# }
-
 write.csv2(data_clean, file = "output_data/data_pc_scored.csv")
 write.csv2(data_mc_raw_clean, file = "output_data/data_pc_scored_mc_raw.csv")
-
-
-
-

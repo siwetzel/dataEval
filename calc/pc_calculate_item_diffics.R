@@ -1,5 +1,6 @@
 library(readr)
 library(TAM)
+library(WrightMap)
 
 # Set working directory to folder where all R code related to the study is stored
 setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
@@ -8,10 +9,15 @@ setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
 source("helper_functions/virtual_person_transformation.R")
 # load helper function for Q matrix
 source("helper_functions/create_Q_matrix.R")
+# load helper function for handling of missing values (55/99)
+source("helper_functions/handle_missing_values.R")
 
 # get data
-data = read_csv2("output_data/data_pc_final_noNA.csv", show_col_types = FALSE)
+data = read_csv2("output_data/data_pc_scored.csv", show_col_types = FALSE)
 data = data.frame(data, row.names = 1)
+
+# Transform OM / NR values to 0 / NA
+data = handle_missing_values(data,FALSE,TRUE)
 
 # Create a transformed dataframe for the virtual person approach
 data_vp = virtual_person_transformation(data)
@@ -20,25 +26,32 @@ data_vp = virtual_person_transformation(data)
 Q = create_Q_2dim(ncol(data))
 
 # analysis of items with PARTIAL CREDIT MODEL
-# TODO 
 mod <- TAM::tam.mml(resp=data_vp, Q=Q, irtmodel = "PCM")
+mod2=TAM::tam.mml(resp=data_vp, Q=Q, irtmodel = "PCM2")
+# <- TAM::tam.mml(resp=data_vp, irtmodel = "PCM")
 
+g <- mod$item_irt
+gg <- g[g$tau.Cat1 > g$tau.Cat2, ]
+rownames(gg)
+
+plot(mod, 
+     type = "items", 
+     export = FALSE, 
+     package = "graphics", 
+     observed = TRUE, 
+     low = -6, 
+     high = 6)
 
 # todO: was mit den thurtonial thresholds machen?
 thresh = TAM::tam.threshold(mod)
 
-
-
-
-
+# determine pointbiserial corelation (trennschärfe)
 abil = tam.wle(mod)
-fitting = (tam.fit(mod))$itemfit
 
-##### CTT ANALYSIS ##### (TODO: Müssen Trennschärfen hier oder bei vierdimensionaler Analyse berechnet werden?)
 ctt1 = tam.ctt(data_vp, abil$theta.Dim01)
 ctt2 = tam.ctt(data_vp, abil$theta.Dim02)
 
-# determine pointbiserial corelation (trennschärfe) with the right dimension
+# match with the correct dimensions
 # procedural
 pbc1 = c()
 # conceptual
@@ -70,6 +83,8 @@ for (j in 1:ncol(freq)) {
   freq[1,j] = temp / counter
 }
 
+# Analyse Infit values
+fitting = (tam.fit(mod))$itemfit
 
 # Save item difficulties
 write.table(mod$xsi$xsi, file="output_data/pc_item_diffics.csv", sep=",", col.names = FALSE, row.names = FALSE)

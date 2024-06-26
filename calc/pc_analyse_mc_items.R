@@ -10,7 +10,7 @@ library(TAM)
 setwd("C:/Users/Sina-/Dropbox/Lehrstuhl/Diss/Auswertung/R")
 
 # get data
-data = read_csv2("output_data/data_pc_final_noNA_mc_raw.csv", show_col_types = FALSE)
+data = read_csv2("output_data/data_pc_scored_mc_raw.csv", show_col_types = FALSE)
 data = data.frame(data, row.names = 1)
 
 ############### VIRTUAL PERSON TRANSFORMATION ###################

@@ -1,8 +1,4 @@
 code_missing_values = function(data) {
-  # TODO: Workaround für den moment: 1095S wird geskippt (weil nur NAs im Vortest)
-  # TODO: vorher Datensatz checken und, falls vorhanden, Personen (Zeilen) vollständig rauswerfen, die in einem von beiden Test nur NAs haben
-  
-  
   # function expects full data matrix (i.e. before a virtual person transformation was performed or
   # separate columns were created for pretest and posttest items
   # data matrix needs participant codes as rownames and itemnames as colnames
@@ -31,16 +27,12 @@ code_missing_values = function(data) {
       b1_end = j-1
     }
   }
+
     
   # check for each participant separately for pretest and posttest which was the
   # last item that was done. Mark all missing items before that as omitted ("55") as well as the next item after the last one done
   # mark all items after the last item that was marked as omitted as not reached ("99")
   for (i in 1:nrow(data)) {
-    # TODO: später entfernen wenn Datensatz entsprechend vorbereitet wurd (hat nur NAs in einem der Tests)
-    if (rownames(data)[i] == "1095S") {
-      next
-    }
-      
     booklet = substr(rownames(data)[i],5,5)
     last_done_pre = 0
     last_done_post = 0

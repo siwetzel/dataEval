@@ -137,10 +137,6 @@ grade_table = data[,c("group","mark")]
 grade_table = na.omit(grade_table)
 
 # visualise grade distribution with a boxplot
-ggboxplot(grade_table, x = "group", y = "mark", 
-          color = "group", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#00AA11"),
-          ylab = "Mathematiknote", xlab = "Gruppe")
-
 # lwd = 1.1 => Liniendicke Umrandung Boxen und Medianstrich
 # theme_classic() => sorgt u.a. dafür dass Gitternetz verschwindet
 # legend.position = "none" => blendet Legende aus
